@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/raykrueger/llama-metrics-proxy/compare/v1.0.0...v1.0.1) (2026-04-29)
+
+
+### Bug Fixes
+
+* set Model template variable to single-select for per-model view ([0dcb7b5](https://github.com/raykrueger/llama-metrics-proxy/commit/0dcb7b5a8413d110173a986e8d2e6aa91a33f3df))
+* trigger build and release on release created event ([4091894](https://github.com/raykrueger/llama-metrics-proxy/commit/40918949c8c932f88fac827a90e74b6b349a9b6b))
+
 ## 1.0.0 (2026-04-29)
 
 
