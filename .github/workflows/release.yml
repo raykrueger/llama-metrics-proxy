@@ -1,0 +1,26 @@
+name: release
+
+on:
+  push:
+    tags:
+      - '**'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create tarball
+        run: |
+          mkdir llama-metrics-proxy
+          cp scraper.py grafana-dashboard.json README.md LICENSE llama-metrics-proxy/
+          tar -czf llama-metrics-proxy-${{ github.ref_name }}.tar.gz llama-metrics-proxy/
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: llama-metrics-proxy-${{ github.ref_name }}.tar.gz
