@@ -1,4 +1,13 @@
 #!/usr/bin/env python3
+"""
+Prometheus metrics aggregator for llama.cpp router mode.
+
+llama.cpp's /metrics endpoint requires a ?model= parameter when running in
+router mode (--models-preset). Scraping without one returns a 400 error, and
+scraping an unloaded model wakes it from sleep. This sidecar works around both
+problems by discovering models via /v1/models, scraping only loaded ones, and
+emitting zero-value metrics for unloaded models so time series remain continuous.
+"""
 import argparse
 import json
 import urllib.request
@@ -8,22 +17,35 @@ from functools import partial
 
 
 def get_models(base_url):
+    """Return all non-failed models from /v1/models as (model_id, label, loaded) tuples.
+
+    label is the first alias if available, otherwise the model id.
+    loaded is True only when status.value == "loaded" and the model has not failed.
+    Failed models are excluded entirely — they cannot serve metrics and would
+    trigger repeated failed wakeup attempts on every scrape.
+    """
     with urllib.request.urlopen(f"{base_url}/v1/models", timeout=10) as resp:
         data = json.loads(resp.read())
     models = []
     for m in data.get("data", []):
         status = m.get("status", {})
+        if status.get("failed"):
+            continue
         model_id = m["id"]
         aliases = m.get("aliases", [])
         label = aliases[0] if aliases else model_id
-        loaded = status.get("value") == "loaded" and not status.get("failed")
+        loaded = status.get("value") == "loaded"
         models.append((model_id, label, loaded))
     return models
 
 
-# Parsed from a live scrape: list of (name, type, help_text)
+# Metric schema discovered from a live scrape: list of (name, type, help_text).
+# Updated on every successful scrape so new metrics added by llama.cpp are
+# picked up automatically without restarting this proxy.
 _metric_schema = []
 
+# Used when _metric_schema is empty (i.e. no loaded model has been scraped yet).
+# Matches the metrics emitted by llama.cpp as of the time this was written.
 FALLBACK_METRICS = [
     ("llamacpp:prompt_tokens_total",            "counter", "Number of prompt tokens processed."),
     ("llamacpp:prompt_seconds_total",           "counter", "Prompt process time"),
@@ -40,8 +62,7 @@ FALLBACK_METRICS = [
 
 
 def parse_schema(text):
-    """Extract (name, type, help) tuples from Prometheus text."""
-    schema = []
+    """Extract (name, type, help_text) tuples from a Prometheus text payload."""
     help_map = {}
     type_map = {}
     for line in text.splitlines():
@@ -53,12 +74,11 @@ def parse_schema(text):
             parts = line.split(' ', 3)
             if len(parts) == 4:
                 type_map[parts[2]] = parts[3]
-    for name in type_map:
-        schema.append((name, type_map[name], help_map.get(name, "")))
-    return schema
+    return [(name, type_map[name], help_map.get(name, "")) for name in type_map]
 
 
 def update_schema(raw):
+    """Update the cached metric schema from a live scrape response."""
     global _metric_schema
     parsed = parse_schema(raw)
     if parsed:
@@ -66,10 +86,12 @@ def update_schema(raw):
 
 
 def get_schema():
+    """Return the live schema if available, otherwise the hardcoded fallback."""
     return _metric_schema or FALLBACK_METRICS
 
 
 def zero_metrics(label):
+    """Emit all known metrics with value 0 for an unloaded model."""
     lines = []
     for name, typ, help_text in get_schema():
         lines.append(f'# HELP {name} {help_text}')
@@ -79,14 +101,17 @@ def zero_metrics(label):
 
 
 def inject_model_label(text, label):
+    """Inject model="<label>" into every metric line of a Prometheus text payload."""
     lines = []
     for line in text.splitlines():
         if line.startswith('#') or not line.strip():
             lines.append(line)
             continue
         if '{' in line:
+            # existing labels: metric{foo="bar"} -> metric{model="label",foo="bar"}
             line = line.replace('{', f'{{model="{label}",', 1)
         else:
+            # no labels: metric 1.0 -> metric{model="label"} 1.0
             parts = line.split(' ', 1)
             if len(parts) == 2:
                 line = f'{parts[0]}{{model="{label}"}} {parts[1]}'
@@ -95,6 +120,7 @@ def inject_model_label(text, label):
 
 
 def scrape_model(base_url, model_id):
+    """Fetch raw Prometheus text from a single model instance. Returns empty string on failure."""
     url = f"{base_url}/metrics?model={urllib.parse.quote(model_id, safe='/')}"
     try:
         with urllib.request.urlopen(url, timeout=10) as resp:
