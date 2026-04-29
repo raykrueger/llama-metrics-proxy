@@ -25,6 +25,19 @@ curl http://localhost:9091/metrics
 
 Note: on macOS Docker Desktop, containers cannot reach LAN hosts directly. Rsync to a Linux host and build/run there, or use the Python script locally.
 
+## Commit messages
+
+Always use Conventional Commits format. release-please parses these to determine version bumps and generate CHANGELOG entries.
+
+```
+feat: add support for X
+fix: correct Y behavior
+chore: update dependencies
+docs: update README
+```
+
+Common types: `feat` (minor bump), `fix` (patch bump), `chore`/`docs`/`refactor` (no release).
+
 ## Releases
 
 Both CI workflows trigger on any tag push. Tag format is semver (`vX.Y.Z`):
