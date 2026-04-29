@@ -17,7 +17,8 @@ jobs:
       - name: Create tarball
         run: |
           mkdir llama-metrics-proxy
-          cp scraper.py grafana-dashboard.json README.md LICENSE llama-metrics-proxy/
+          cp scraper.py README.md LICENSE llama-metrics-proxy/
+          cp -r grafana llama-metrics-proxy/
           tar -czf llama-metrics-proxy-${{ github.ref_name }}.tar.gz llama-metrics-proxy/
 
       - name: Create release

@@ -61,12 +61,12 @@ The proxy exposes only a single endpoint: `GET /metrics`. All other paths return
 
 ## Grafana Dashboard
 
-`grafana-dashboard.json` contains a pre-built Grafana dashboard titled **llama.cpp** (UID `llamacpp-metrics`).
+`grafana/grafana-dashboard.json` contains a pre-built Grafana dashboard titled **llama.cpp** (UID `llamacpp-metrics`).
 
 **To import it:**
 
 1. In Grafana, go to **Dashboards > Import**.
-2. Click **Upload dashboard JSON file** and select `grafana-dashboard.json`.
+2. Click **Upload dashboard JSON file** and select `grafana/grafana-dashboard.json`.
 3. Choose your Prometheus datasource from the **Datasource** dropdown.
 4. Click **Import**.
 
