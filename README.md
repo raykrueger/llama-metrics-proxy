@@ -21,7 +21,7 @@ The `model` label value is the model's first configured alias when one is presen
 
 ## Requirements
 
-- Python 3.8 or later
+- Python 3.10 or later
 - No external dependencies (uses only the standard library)
 
 ## Usage
@@ -36,15 +36,26 @@ Prometheus can then scrape `http://<host>:9090/metrics`.
 
 ### Running with Docker
 
-Build the image:
+Pull the released image from GHCR:
 
 ```sh
-docker build -t llama-metrics-proxy .
+docker pull ghcr.io/raykrueger/llama-metrics-proxy:1.0.0
 ```
 
 Run the container, passing CLI flags after the image name:
 
 ```sh
+docker run -d -p 9090:9090 ghcr.io/raykrueger/llama-metrics-proxy:1.0.0 --url http://llamacpp:8080 --port 9090
+```
+
+The image is tagged with semver versions (e.g. `1.0.0`, `1.0`).
+
+**Building locally**
+
+You can also build the image from source:
+
+```sh
+docker build -t llama-metrics-proxy .
 docker run -d -p 9090:9090 llama-metrics-proxy --url http://llamacpp:8080 --port 9090
 ```
 
