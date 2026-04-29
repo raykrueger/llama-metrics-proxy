@@ -23,7 +23,7 @@
         "datasource": { "type": "prometheus", "uid": "${datasource}" },
         "query": "label_values(llamacpp:requests_processing, model)",
         "label": "Model",
-        "multi": true,
+        "multi": false,
         "includeAll": true,
         "allValue": ".*",
         "hide": 0,
