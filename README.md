@@ -48,7 +48,7 @@ Run the container, passing CLI flags after the image name:
 docker run -d -p 9090:9090 llama-metrics-proxy --url http://llamacpp:8080 --port 9090
 ```
 
-The Docker image is based on `python:3.12-slim` and has no additional runtime dependencies.
+The Docker image is based on `python:3.13-slim` and has no additional runtime dependencies.
 
 ## CLI Options
 
