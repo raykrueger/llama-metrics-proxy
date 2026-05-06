@@ -21,6 +21,6 @@ jobs:
           tar -czf llama-metrics-proxy-${{ github.ref_name }}.tar.gz llama-metrics-proxy/
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: llama-metrics-proxy-${{ github.ref_name }}.tar.gz
