@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/raykrueger/llama-metrics-proxy/compare/v1.0.1...v1.0.2) (2026-05-11)
+
+
+### Bug Fixes
+
+* update CI workflow triggers and release-please token ([21ec213](https://github.com/raykrueger/llama-metrics-proxy/commit/21ec213d247cd07de779316412ad630a33f17b04))
+
 ## [1.0.1](https://github.com/raykrueger/llama-metrics-proxy/compare/v1.0.0...v1.0.1) (2026-05-11)
 
 
