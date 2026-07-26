@@ -1,4 +1,4 @@
-# llama-metrics-proxy
+# Llama CPP Metrics Proxy
 
 A Prometheus metrics aggregator sidecar for [llama.cpp](https://github.com/ggml-org/llama.cpp) router mode.
 
